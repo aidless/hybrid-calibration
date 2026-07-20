@@ -1,0 +1,738 @@
+{
+  "dataset": "newsgroups",
+  "timestamp": "20260626_232811",
+  "config": {
+    "n_samples": 400,
+    "n_seeds": 2,
+    "n_bins": 10,
+    "model_variants": [
+      "RF-Tabular",
+      "RF-Embed",
+      "RF-Hybrid",
+      "MLP-Embed"
+    ],
+    "num_classes": 8
+  },
+  "seed_results": [
+    {
+      "seed": 42,
+      "metrics": [
+        {
+          "model_name": "RF-Tabular",
+          "feature_set": "tabular",
+          "model_type": "rf",
+          "metrics": {
+            "model": "RF-Tabular",
+            "ece": 0.0762563456172429,
+            "mce": 0.22066429047304353,
+            "brier": 0.3208792426395253,
+            "reliability": {
+              "bin_conf": [
+                0.05,
+                0.15000000000000002,
+                0.25,
+                0.3635214333301864,
+                0.45842144248890243,
+                0.5464604175815277,
+                0.6564901177071628,
+                0.7444412230790268,
+                0.8481038801562004,
+                0.9638155727376592
+              ],
+              "bin_acc": [
+                NaN,
+                NaN,
+                NaN,
+                0.14285714285714285,
+                0.6666666666666666,
+                0.5454545454545454,
+                0.75,
+                0.8666666666666667,
+                1.0,
+                1.0
+              ],
+              "bin_count": [
+                0,
+                0,
+                0,
+                7,
+                9,
+                11,
+                12,
+                15,
+                6,
+                21
+              ],
+              "bin_edges": [
+                0.0,
+                0.1,
+                0.2,
+                0.30000000000000004,
+                0.4,
+                0.5,
+                0.6000000000000001,
+                0.7000000000000001,
+                0.8,
+                0.9,
+                1.0
+              ]
+            },
+            "n_samples": 81,
+            "per_class_ece": {
+              "ece_class_0": 0.07060701075840047,
+              "ece_class_1": 0.053533581875194684,
+              "ece_class_2": 0.07842583491711126,
+              "ece_class_3": 0.10245895491826516
+            },
+            "accuracy": 0.7654320987654321,
+            "train_time_s": 0.17,
+            "feature_set": "tabular",
+            "model_type": "rf"
+          }
+        },
+        {
+          "model_name": "RF-Embed",
+          "feature_set": "embeddings",
+          "model_type": "rf",
+          "metrics": {
+            "model": "RF-Embed",
+            "ece": 0.006905615292712088,
+            "mce": 0.007781760254878645,
+            "brier": 0.7501621187920104,
+            "reliability": {
+              "bin_conf": [
+                0.05,
+                0.15000000000000002,
+                0.2546953405017922,
+                0.35000000000000003,
+                0.45,
+                0.55,
+                0.6500000000000001,
+                0.75,
+                0.8500000000000001,
+                0.95
+              ],
+              "bin_acc": [
+                NaN,
+                NaN,
+                0.24691358024691357,
+                NaN,
+                NaN,
+                NaN,
+                NaN,
+                NaN,
+                NaN,
+                NaN
+              ],
+              "bin_count": [
+                0,
+                0,
+                81,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "bin_edges": [
+                0.0,
+                0.1,
+                0.2,
+                0.30000000000000004,
+                0.4,
+                0.5,
+                0.6000000000000001,
+                0.7000000000000001,
+                0.8,
+                0.9,
+                1.0
+              ]
+            },
+            "n_samples": 81,
+            "per_class_ece": {
+              "ece_class_0": 0.00115093588211862,
+              "ece_class_1": 0.007781760254878645,
+              "ece_class_2": 0.013811230585424245,
+              "ece_class_3": 0.004878534448426841
+            },
+            "accuracy": 0.24691358024691357,
+            "train_time_s": 0.14,
+            "feature_set": "embeddings",
+            "model_type": "rf"
+          }
+        },
+        {
+          "model_name": "RF-Hybrid",
+          "feature_set": "hybrid",
+          "model_type": "rf",
+          "metrics": {
+            "model": "RF-Hybrid",
+            "ece": 0.08078579263263747,
+            "mce": 0.20319865246760405,
+            "brier": 0.34360189758173276,
+            "reliability": {
+              "bin_conf": [
+                0.05,
+                0.15000000000000002,
+                0.29680134753239595,
+                0.3617288515323904,
+                0.44366346295730513,
+                0.5505698762746092,
+                0.6548849015194459,
+                0.7438604373861119,
+                0.8640545893931785,
+                0.9567425774731614
+              ],
+              "bin_acc": [
+                NaN,
+                NaN,
+                0.5,
+                0.3333333333333333,
+                0.5714285714285714,
+                0.625,
+                0.6428571428571429,
+                0.9230769230769231,
+                1.0,
+                1.0
+              ],
+              "bin_count": [
+                0,
+                0,
+                2,
+                6,
+                14,
+                8,
+                14,
+                13,
+                5,
+                19
+              ],
+              "bin_edges": [
+                0.0,
+                0.1,
+                0.2,
+                0.30000000000000004,
+                0.4,
+                0.5,
+                0.6000000000000001,
+                0.7000000000000001,
+                0.8,
+                0.9,
+                1.0
+              ]
+            },
+            "n_samples": 81,
+            "per_class_ece": {
+              "ece_class_0": 0.09770604354466375,
+              "ece_class_1": 0.04542355003872971,
+              "ece_class_2": 0.07782856008376114,
+              "ece_class_3": 0.10218501686339525
+            },
+            "accuracy": 0.7530864197530864,
+            "train_time_s": 0.16,
+            "feature_set": "hybrid",
+            "model_type": "rf"
+          }
+        },
+        {
+          "model_name": "MLP-Embed",
+          "feature_set": "embeddings",
+          "model_type": "mlp",
+          "metrics": {
+            "model": "MLP-Embed",
+            "ece": 0.005294663808595987,
+            "mce": 0.005773158720981941,
+            "brier": 0.7500354470624871,
+            "reliability": {
+              "bin_conf": [
+                0.05,
+                0.15000000000000002,
+                0.2526867389678955,
+                0.35000000000000003,
+                0.45,
+                0.55,
+                0.6500000000000001,
+                0.75,
+                0.8500000000000001,
+                0.95
+              ],
+              "bin_acc": [
+                NaN,
+                NaN,
+                0.24691358024691357,
+                NaN,
+                NaN,
+                NaN,
+                NaN,
+                NaN,
+                NaN,
+                NaN
+              ],
+              "bin_count": [
+                0,
+                0,
+                81,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "bin_edges": [
+                0.0,
+                0.1,
+                0.2,
+                0.30000000000000004,
+                0.4,
+                0.5,
+                0.6000000000000001,
+                0.7000000000000001,
+                0.8,
+                0.9,
+                1.0
+              ]
+            },
+            "n_samples": 81,
+            "per_class_ece": {
+              "ece_class_0": 0.004816176346790657,
+              "ece_class_1": 0.0009837728223682785,
+              "ece_class_2": 0.009605559118000068,
+              "ece_class_3": 0.005773158720981941
+            },
+            "accuracy": 0.24691358024691357,
+            "train_time_s": 0.41,
+            "feature_set": "embeddings",
+            "model_type": "mlp"
+          }
+        }
+      ]
+    },
+    {
+      "seed": 123,
+      "metrics": [
+        {
+          "model_name": "RF-Tabular",
+          "feature_set": "tabular",
+          "model_type": "rf",
+          "metrics": {
+            "model": "RF-Tabular",
+            "ece": 0.0762563456172429,
+            "mce": 0.22066429047304353,
+            "brier": 0.3208792426395253,
+            "reliability": {
+              "bin_conf": [
+                0.05,
+                0.15000000000000002,
+                0.25,
+                0.3635214333301864,
+                0.45842144248890254,
+                0.5464604175815277,
+                0.6564901177071628,
+                0.7444412230790268,
+                0.8481038801562004,
+                0.9638155727376592
+              ],
+              "bin_acc": [
+                NaN,
+                NaN,
+                NaN,
+                0.14285714285714285,
+                0.6666666666666666,
+                0.5454545454545454,
+                0.75,
+                0.8666666666666667,
+                1.0,
+                1.0
+              ],
+              "bin_count": [
+                0,
+                0,
+                0,
+                7,
+                9,
+                11,
+                12,
+                15,
+                6,
+                21
+              ],
+              "bin_edges": [
+                0.0,
+                0.1,
+                0.2,
+                0.30000000000000004,
+                0.4,
+                0.5,
+                0.6000000000000001,
+                0.7000000000000001,
+                0.8,
+                0.9,
+                1.0
+              ]
+            },
+            "n_samples": 81,
+            "per_class_ece": {
+              "ece_class_0": 0.07060701075840047,
+              "ece_class_1": 0.053533581875194684,
+              "ece_class_2": 0.07842583491711126,
+              "ece_class_3": 0.10245895491826515
+            },
+            "accuracy": 0.7654320987654321,
+            "train_time_s": 0.17,
+            "feature_set": "tabular",
+            "model_type": "rf"
+          }
+        },
+        {
+          "model_name": "RF-Embed",
+          "feature_set": "embeddings",
+          "model_type": "rf",
+          "metrics": {
+            "model": "RF-Embed",
+            "ece": 0.006905615292712088,
+            "mce": 0.007781760254878645,
+            "brier": 0.7501621187920107,
+            "reliability": {
+              "bin_conf": [
+                0.05,
+                0.15000000000000002,
+                0.2546953405017922,
+                0.35000000000000003,
+                0.45,
+                0.55,
+                0.6500000000000001,
+                0.75,
+                0.8500000000000001,
+                0.95
+              ],
+              "bin_acc": [
+                NaN,
+                NaN,
+                0.24691358024691357,
+                NaN,
+                NaN,
+                NaN,
+                NaN,
+                NaN,
+                NaN,
+                NaN
+              ],
+              "bin_count": [
+                0,
+                0,
+                81,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "bin_edges": [
+                0.0,
+                0.1,
+                0.2,
+                0.30000000000000004,
+                0.4,
+                0.5,
+                0.6000000000000001,
+                0.7000000000000001,
+                0.8,
+                0.9,
+                1.0
+              ]
+            },
+            "n_samples": 81,
+            "per_class_ece": {
+              "ece_class_0": 0.00115093588211862,
+              "ece_class_1": 0.007781760254878645,
+              "ece_class_2": 0.013811230585424245,
+              "ece_class_3": 0.004878534448426841
+            },
+            "accuracy": 0.24691358024691357,
+            "train_time_s": 0.15,
+            "feature_set": "embeddings",
+            "model_type": "rf"
+          }
+        },
+        {
+          "model_name": "RF-Hybrid",
+          "feature_set": "hybrid",
+          "model_type": "rf",
+          "metrics": {
+            "model": "RF-Hybrid",
+            "ece": 0.08078579263263745,
+            "mce": 0.20319865246760405,
+            "brier": 0.34360189758173276,
+            "reliability": {
+              "bin_conf": [
+                0.05,
+                0.15000000000000002,
+                0.29680134753239595,
+                0.36172885153239037,
+                0.44366346295730513,
+                0.5505698762746092,
+                0.6548849015194459,
+                0.7438604373861119,
+                0.8640545893931785,
+                0.9567425774731614
+              ],
+              "bin_acc": [
+                NaN,
+                NaN,
+                0.5,
+                0.3333333333333333,
+                0.5714285714285714,
+                0.625,
+                0.6428571428571429,
+                0.9230769230769231,
+                1.0,
+                1.0
+              ],
+              "bin_count": [
+                0,
+                0,
+                2,
+                6,
+                14,
+                8,
+                14,
+                13,
+                5,
+                19
+              ],
+              "bin_edges": [
+                0.0,
+                0.1,
+                0.2,
+                0.30000000000000004,
+                0.4,
+                0.5,
+                0.6000000000000001,
+                0.7000000000000001,
+                0.8,
+                0.9,
+                1.0
+              ]
+            },
+            "n_samples": 81,
+            "per_class_ece": {
+              "ece_class_0": 0.09770604354466375,
+              "ece_class_1": 0.04542355003872971,
+              "ece_class_2": 0.07782856008376113,
+              "ece_class_3": 0.10218501686339525
+            },
+            "accuracy": 0.7530864197530864,
+            "train_time_s": 0.15,
+            "feature_set": "hybrid",
+            "model_type": "rf"
+          }
+        },
+        {
+          "model_name": "MLP-Embed",
+          "feature_set": "embeddings",
+          "model_type": "mlp",
+          "metrics": {
+            "model": "MLP-Embed",
+            "ece": 0.005294663808595987,
+            "mce": 0.005773158720981941,
+            "brier": 0.7500354470624871,
+            "reliability": {
+              "bin_conf": [
+                0.05,
+                0.15000000000000002,
+                0.2526867389678955,
+                0.35000000000000003,
+                0.45,
+                0.55,
+                0.6500000000000001,
+                0.75,
+                0.8500000000000001,
+                0.95
+              ],
+              "bin_acc": [
+                NaN,
+                NaN,
+                0.24691358024691357,
+                NaN,
+                NaN,
+                NaN,
+                NaN,
+                NaN,
+                NaN,
+                NaN
+              ],
+              "bin_count": [
+                0,
+                0,
+                81,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "bin_edges": [
+                0.0,
+                0.1,
+                0.2,
+                0.30000000000000004,
+                0.4,
+                0.5,
+                0.6000000000000001,
+                0.7000000000000001,
+                0.8,
+                0.9,
+                1.0
+              ]
+            },
+            "n_samples": 81,
+            "per_class_ece": {
+              "ece_class_0": 0.004816176346790657,
+              "ece_class_1": 0.0009837728223682785,
+              "ece_class_2": 0.009605559118000068,
+              "ece_class_3": 0.005773158720981941
+            },
+            "accuracy": 0.24691358024691357,
+            "train_time_s": 0.4,
+            "feature_set": "embeddings",
+            "model_type": "mlp"
+          }
+        }
+      ]
+    }
+  ],
+  "aggregated": {
+    "RF-Tabular": {
+      "ece_mean": 0.0762563456172429,
+      "ece_std": 0.0,
+      "mce_mean": 0.22066429047304353,
+      "mce_std": 0.0,
+      "brier_mean": 0.3208792426395253,
+      "brier_std": 0.0,
+      "accuracy_mean": 0.7654320987654321,
+      "accuracy_std": 0.0,
+      "train_time_mean_s": 0.17
+    },
+    "RF-Embed": {
+      "ece_mean": 0.006905615292712088,
+      "ece_std": 0.0,
+      "mce_mean": 0.007781760254878645,
+      "mce_std": 0.0,
+      "brier_mean": 0.7501621187920106,
+      "brier_std": 1.5700924586837752e-16,
+      "accuracy_mean": 0.24691358024691357,
+      "accuracy_std": 0.0,
+      "train_time_mean_s": 0.14500000000000002
+    },
+    "RF-Hybrid": {
+      "ece_mean": 0.08078579263263747,
+      "ece_std": 1.3877787807814457e-17,
+      "mce_mean": 0.20319865246760405,
+      "mce_std": 0.0,
+      "brier_mean": 0.34360189758173276,
+      "brier_std": 0.0,
+      "accuracy_mean": 0.7530864197530864,
+      "accuracy_std": 0.0,
+      "train_time_mean_s": 0.155
+    },
+    "MLP-Embed": {
+      "ece_mean": 0.005294663808595987,
+      "ece_std": 0.0,
+      "mce_mean": 0.005773158720981941,
+      "mce_std": 0.0,
+      "brier_mean": 0.7500354470624871,
+      "brier_std": 0.0,
+      "accuracy_mean": 0.24691358024691357,
+      "accuracy_std": 0.0,
+      "train_time_mean_s": 0.405
+    }
+  },
+  "pairwise_tests_ece": [
+    {
+      "model_a": "MLP-Embed",
+      "model_b": "RF-Embed",
+      "metric": "ece",
+      "statistic": 0.0,
+      "p_value": 0.5,
+      "significant": false,
+      "method": "wilcoxon",
+      "mean_diff": -0.0016109514841161007,
+      "std_diff": 0.0,
+      "p_value_corrected": 1.0,
+      "significant_corrected": false
+    },
+    {
+      "model_a": "MLP-Embed",
+      "model_b": "RF-Hybrid",
+      "metric": "ece",
+      "statistic": 0.0,
+      "p_value": 0.5,
+      "significant": false,
+      "method": "wilcoxon",
+      "mean_diff": -0.07549112882404148,
+      "std_diff": 1.3877787807814457e-17,
+      "p_value_corrected": 1.0,
+      "significant_corrected": false
+    },
+    {
+      "model_a": "MLP-Embed",
+      "model_b": "RF-Tabular",
+      "metric": "ece",
+      "statistic": 0.0,
+      "p_value": 0.5,
+      "significant": false,
+      "method": "wilcoxon",
+      "mean_diff": -0.07096168180864691,
+      "std_diff": 0.0,
+      "p_value_corrected": 1.0,
+      "significant_corrected": false
+    },
+    {
+      "model_a": "RF-Embed",
+      "model_b": "RF-Hybrid",
+      "metric": "ece",
+      "statistic": 0.0,
+      "p_value": 0.5,
+      "significant": false,
+      "method": "wilcoxon",
+      "mean_diff": -0.07388017733992538,
+      "std_diff": 1.962615573354719e-17,
+      "p_value_corrected": 1.0,
+      "significant_corrected": false
+    },
+    {
+      "model_a": "RF-Embed",
+      "model_b": "RF-Tabular",
+      "metric": "ece",
+      "statistic": 0.0,
+      "p_value": 0.5,
+      "significant": false,
+      "method": "wilcoxon",
+      "mean_diff": -0.06935073032453082,
+      "std_diff": 0.0,
+      "p_value_corrected": 1.0,
+      "significant_corrected": false
+    },
+    {
+      "model_a": "RF-Hybrid",
+      "model_b": "RF-Tabular",
+      "metric": "ece",
+      "statistic": 0.0,
+      "p_value": 0.5,
+      "significant": false,
+      "method": "wilcoxon",
+      "mean_diff": 0.0045294470153945665,
+      "std_diff": 9.813077866773595e-18,
+      "p_value_corrected": 1.0,
+      "significant_corrected": false
+    }
+  ]
+}
