@@ -72,7 +72,7 @@ jobs:
           echo "--- baseline: the gate must pass on the clean tree ---"
           if ! bash -c '
             set -uo pipefail
-            if git ls-files "*.py" | grep -q .; then
+            if [ -n "$(git ls-files "*.py")" ]; then
               python -m compileall -q .
             else
               echo "no Python sources tracked"
@@ -84,16 +84,22 @@ jobs:
           fi
           echo "baseline passed"
 
-          target=$(git ls-files '*.py' | head -1)
+          target=$(git ls-files '*.py' | sed -n '1p')
           if [ -z "$target" ]; then
             echo "no Python sources tracked, so there is nothing to corrupt"
             exit 0
           fi
           echo "--- corrupting $target ---"
+          # The baseline pass above left a .pyc for every tracked source, and
+          # compileall treats a cache as fresh whenever int(st_mtime) still matches
+          # without comparing file size. A corruption landing in the same
+          # wall-clock second is therefore skipped and the gate calls a broken file
+          # clean -- which is exactly how this control failed on its first run.
+          find . -name '__pycache__' -type d -prune -exec rm -rf {} +
           printf '\n\ndef __mutation_control__(:\n' >> "$target"
           if bash -c '
             set -uo pipefail
-            if git ls-files "*.py" | grep -q .; then
+            if [ -n "$(git ls-files "*.py")" ]; then
               python -m compileall -q .
             else
               echo "no Python sources tracked"
