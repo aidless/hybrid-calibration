@@ -96,7 +96,7 @@ Hybrid Cal:      LLM 特征 → 校准退化   (隐形代价 #2)
 ## 6. Quick Start
 
 ```powershell
-cd C:\Users\Administrator\ZCodeProject\hybrid_calibration
+cd hybrid-calibration   # repository root (clone location is arbitrary)
 
 # Install deps if needed
 pip install torch transformers xgboost lightgbm scikit-learn scipy matplotlib seaborn datasets

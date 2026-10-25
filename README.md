@@ -52,6 +52,41 @@ for the blocking issues that have to be cleared before publication.
 | `data/` `results/` `figures/` | inputs, outputs, plots |
 | [DEEP_DIVE.md](DEEP_DIVE.md) | architecture, results, and the publication blockers |
 
+## Environment
+
+- Python: CI runs on **3.12** (`.github/workflows/ci.yml`).
+- Dependencies: there is no `requirements.txt`; the de-facto list comes from
+  the imports — numpy, scipy, scikit-learn, matplotlib, torch + transformers
+  (GPT-2 embedding extraction), xgboost, lightgbm, and the Hugging Face
+  `datasets` library (imdb / ag_news / yelp loaders in `data_loader.py`).
+  One-line install from [DEEP_DIVE.md](DEEP_DIVE.md) Quick Start:
+  `pip install torch transformers xgboost lightgbm scikit-learn scipy matplotlib seaborn datasets`
+- Seeds: `config.py` sets `RANDOM_SEEDS = list(range(10))` (the planned
+  design); the committed pilot runs used `n_seeds: 2` (recorded in each
+  results JSON's `config` block). The initial train/val/test split is
+  stratified with `seed=42` (`data_loader.py`).
+
+## Data availability
+
+- **Raw text** is downloaded at run time: newsgroups via
+  `sklearn.datasets.fetch_20newsgroups`, imdb / ag_news / yelp via the
+  Hugging Face `datasets` library (`data_loader.py`). If a download fails the
+  loader falls back to synthetic data (cached with a `data_source` flag) —
+  check that flag before citing numbers.
+- **Embedding caches** for the newsgroups splits are committed under
+  `data/embeddings/` as `.npy` matrices. Filenames follow
+  `{dataset}_{split}_{model}_{md5-of-texts}_{n_samples}.npy`
+  (`embedding_extractor.py`), so a cache hit can be verified against the text.
+- **Results ↔ files**: the table above corresponds exactly to
+  `results/newsgroups_20260626_232910.json` (4 model variants, 2 seeds, 400
+  samples; see its `aggregated` block). The other `results/newsgroups_*.json`
+  files are later exploratory runs with more variants/samples (e.g. 7 variants
+  at 800 samples in `newsgroups_20260627_174217.json`); `figures/*.png` are
+  rendered from those JSONs by `visualize.py`.
+- The full planned design (14 variants x 10 seeds x 4 datasets) has **not**
+  been run yet; the blocking issues are listed in
+  [DEEP_DIVE.md](DEEP_DIVE.md).
+
 ## License
 
 Code is MIT-licensed ([LICENSE](LICENSE)). The calibration study releases the
