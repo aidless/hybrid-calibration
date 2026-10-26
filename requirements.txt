@@ -1,0 +1,18 @@
+# Generated from static import analysis (see AUDIT.md provenance note).
+# Repo: aidless/hybrid-calibration
+# Only top-level third-party imports are listed; stdlib and in-repo modules are excluded.
+# Versions are intentionally unpinned unless a floor is required for API compatibility.
+
+lightgbm  # models.py:18
+matplotlib  # visualize.py:16
+numpy>=1.24  # calibration.py:14
+scipy  # utils.py:10
+seaborn  # visualize.py:20
+scikit-learn  # calibration.py:16
+torch>=2.0  # embedding_extractor.py:31
+xgboost  # models.py:17
+
+# --- optional / conditionally imported (guarded by try/except or lazily loaded) ---
+# datasets>=2.18  # data_loader.py:105
+# requests  # data_loader.py:106
+# transformers>=4.40  # embedding_extractor.py:95
