@@ -66,6 +66,18 @@ for the blocking issues that have to be cleared before publication.
   results JSON's `config` block). The initial train/val/test split is
   stratified with `seed=42` (`data_loader.py`).
 
+## Offline verification
+
+```bash
+python -m pip install pytest
+pytest -q
+```
+
+These lightweight tests do not rerun model training. They verify that every
+committed result has its dataset, seed count, and model-variant metadata;
+that reported calibration metrics stay in their valid ranges; and that the
+pilot table above matches its named JSON source.
+
 ## Data availability
 
 - **Raw text** is downloaded at run time: newsgroups via

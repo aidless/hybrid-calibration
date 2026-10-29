@@ -11,6 +11,7 @@ seaborn  # visualize.py:20
 scikit-learn  # calibration.py:16
 torch>=2.0  # embedding_extractor.py:31
 xgboost  # models.py:17
+pytest>=8.0  # tests/test_committed_results.py
 
 # --- optional / conditionally imported (guarded by try/except or lazily loaded) ---
 # datasets>=2.18  # data_loader.py:105
