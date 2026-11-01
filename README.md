@@ -71,12 +71,36 @@ for the blocking issues that have to be cleared before publication.
 ```bash
 python -m pip install pytest
 pytest -q
+# 3 passed
 ```
 
 These lightweight tests do not rerun model training. They verify that every
 committed result has its dataset, seed count, and model-variant metadata;
 that reported calibration metrics stay in their valid ranges; and that the
-pilot table above matches its named JSON source.
+pilot table above matches its named JSON source. The three tests are:
+`test_result_files_have_reproducibility_metadata`,
+`test_result_aggregates_are_finite_probabilities`, and
+`test_readme_pilot_table_matches_named_result_file`.
+
+## Quick start
+
+```bash
+# 1) Install deps (one line, from DEEP_DIVE.md Quick Start)
+pip install torch transformers xgboost lightgbm scikit-learn scipy matplotlib seaborn datasets
+
+# 2) Run the committed-results verification (no model training, no network)
+pytest -q        # 3 passed
+
+# 3) Regenerate the pilot table's numbers from the committed JSON (no retraining)
+python -c "import json; d=json.load(open('results/newsgroups_20260626_232910.json')); [print(k, tuple(round(m[n+'_mean'],3) for n in ('ece','mce','brier','accuracy'))) for k,m in d['aggregated'].items()]"
+
+# 4) Rerun the experiment itself (downloads data; may take long)
+python experiment.py --dataset newsgroups
+```
+
+> The full planned design (14 variants × 10 seeds × 4 datasets, up to 560 training runs)
+> has **not** been run. The committed numbers are a 2-seed / 1-dataset / 4-model pilot —
+> see the boundary statement above and [DEEP_DIVE.md](DEEP_DIVE.md).
 
 ## Data availability
 
