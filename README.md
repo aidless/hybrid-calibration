@@ -66,6 +66,21 @@ for the blocking issues that have to be cleared before publication.
   results JSON's `config` block). The initial train/val/test split is
   stratified with `seed=42` (`data_loader.py`).
 
+## Benchmark (offline verification)
+
+`benchmarks/bench_offline_verify.py` verifies — without rerunning any model
+training — that the committed pilot tables are real and recomputable:
+
+```bash
+python benchmarks/bench_offline_verify.py   # RESULT: PASS
+```
+
+It checks result-file reproducibility metadata, that ECE/MCE/Brier/accuracy
+aggregates are finite probabilities in valid ranges, and that the README pilot
+table matches its named JSON source byte-for-byte (round 3). It does **not**
+claim statistical meaningfulness — 2 seeds cannot separate a real effect from
+noise (see `DEEP_DIVE.md` and `PREREG.md` §5).
+
 ## Offline verification
 
 ```bash
