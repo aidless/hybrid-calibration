@@ -1,7 +1,7 @@
 # hybrid-calibration
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Data](https://img.shields.io/badge/data-CC--BY--4.0-lightgrey.svg)](LICENSE)
+[![Data](https://img.shields.io/badge/data-CC--BY--4.0-lightgrey.svg)](LICENSE-DATA)
 
 **Does adding LLM embeddings to a tree ensemble buy calibration, or does it cost accuracy?**
 
