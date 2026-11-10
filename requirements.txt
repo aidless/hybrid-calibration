@@ -5,7 +5,7 @@
 
 lightgbm  # models.py:18
 matplotlib  # visualize.py:16
-numpy>=1.24  # calibration.py:14
+numpy>=2.5.4  # calibration.py:14
 scipy  # utils.py:10
 seaborn  # visualize.py:20
 scikit-learn  # calibration.py:16
