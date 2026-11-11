@@ -1,5 +1,7 @@
 # hybrid-calibration
 
+> **English TL;DR**: A calibration study that mixes 14 tabular features with 768-d GPT-2 embeddings to compare ECE, Brier score and accuracy across tabular / embedding / hybrid models. Every committed result is a pilot (400–800 samples, 2–3 seeds, 1 dataset, 4–7 of 14 planned variants); the planned 14 × 10 × 4 design is **NOT YET MEASURED**, and the embedding variants flip between useless and near-perfect across runs, which is itself the honest finding.
+
 [![CI](https://github.com/aidless/hybrid-calibration/actions/workflows/ci.yml/badge.svg)](https://github.com/aidless/hybrid-calibration/actions/workflows/ci.yml)
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
@@ -157,3 +159,50 @@ GitHub's license detector reports this repository as `NOASSERTION` because it re
 single SPDX id per repository and this one carries two. The split is deliberate: the
 code stays permissively licensed so it can be reused, and the research material stays
 attributable so a citation is required.
+
+## U1 results table (recomputed 2026-11-11)
+
+All numbers below are recomputed offline from the five committed result JSONs.
+No training was run in this pass.
+
+| Result file | n_samples | n_seeds | model variants | seed_results | Source (path:line) |
+|---|---|---|---|---|---|
+| `newsgroups_20260626_232811.json` | 400 | 2 | 4 | 2 | `results/newsgroups_20260626_232811.json:4` |
+| `newsgroups_20260626_232910.json` | 400 | 2 | 4 | 2 | `results/newsgroups_20260626_232910.json:4` |
+| `newsgroups_20260627_174217.json` | 800 | 3 | 7 | 3 | `results/newsgroups_20260627_174217.json:4` |
+| `newsgroups_20260627_175253.json` | 500 | 2 | 4 | 2 | `results/newsgroups_20260627_175253.json:4` |
+| `newsgroups_20260627_181524.json` | 400 | 2 | 6 | 2 | `results/newsgroups_20260627_181524.json:4` |
+
+Primary pilot file (`newsgroups_20260626_232910.json`), `aggregated` means:
+
+| Model | ECE ↓ | Brier ↓ | Accuracy ↑ | Source (path:line) |
+|---|---|---|---|---|
+| `RF-Tabular` | 0.074 | 0.273 | 0.796 | `results/newsgroups_20260626_232910.json:9` |
+| `RF-Embed` | 0.007 | 0.750 | 0.247 | `results/newsgroups_20260626_232910.json:10` |
+| `RF-Hybrid` | 0.087 | 0.280 | 0.790 | `results/newsgroups_20260626_232910.json:11` |
+| `MLP-Embed` | 0.006 | 0.750 | 0.247 | `results/newsgroups_20260626_232910.json:12` |
+
+**Recompute command actually executed for this pass** (exit 0):
+
+```bash
+# 5 result files
+# newsgroups_20260626_232811.json 400 2 4
+# newsgroups_20260626_232910.json 400 2 4
+# newsgroups_20260627_174217.json 800 3 7
+# newsgroups_20260627_175253.json 500 2 4
+# newsgroups_20260627_181524.json 400 2 6
+```
+
+**NOT YET MEASURED**: the full 14 variants x 10 seeds x 4 datasets design
+(`README.md:23`, `README.md:127`), and any paired significance claim at n=2–3
+seeds (`README.md:43`). The cross-run inconsistency is documented in the
+existing README section above: `RF-Embed` accuracy moves from
+0.247 to
+0.996
+across committed files. Offline reproduction (no network, no model downloads):
+
+```bash
+python3 -c "import json,glob; [print(p, json.load(open(p))['aggregated']) for p in sorted(glob.glob('results/newsgroups_*.json'))]"
+```
+
+<!-- figure: pending real measurement -->
