@@ -245,3 +245,34 @@ python3 -c "import json,glob; [print(p, json.load(open(p))['aggregated']) for p 
 ```
 
 <!-- figure: pending real measurement -->
+
+## 验收题库与复算
+
+`eval/cases.jsonl` 是 20 条可执行验收题，覆盖 15 个口径轴：ECE 分箱与箱边界
+（`cal/ece`）、MCE、Brier、JSD、可靠性曲线空箱填充（`cal/reliability`）、
+数据集与变体登记（`cfg/datasets`、`cfg/variants`）、Bonferroni 与 Wilcoxon
+（`stats/*`）、手写表格特征口径（`feat/tabular`）、后校准器契约
+（`model/calibrated`、`model/factory`）、已提交结果的复算（`results/committed`）、
+测试文件声明的条数（`tests/declared`）与 README 自身（`doc/readme`）。
+其中 19 条是 `expr`/`raises`，全部真调本仓 API（`calibration.py`、`config.py`、
+`utils.py`、`data_loader.py`、`models.py`）或真读本仓落盘文件
+（`results/*.json`、`tests/*.py`），不是把文档里的数字抄一遍。
+
+**验收判据**：`python3 eval/run_cases.py` 必须 20 条全过、失败 0 条（通过率 100%），
+且 `--selftest` 必须变红（19/20）——只绿不红说明这套题是装饰，不具备验收资格。
+
+```bash
+python3 eval/run_cases.py            # 20/20 cases passed
+python3 eval/run_cases.py --save     # 顺带把结果写进 eval/run-report.json
+python3 eval/run_cases.py --selftest # 篡改一条期望值，必须变红
+```
+
+**数字如何复算**：`eval/run-report.json` 里每条 case 都带 `id` / `axis` / `detail`，
+把 `detail` 与 `cases.jsonl` 的 `verify` 代码一起看，就能从源码复现该数字。
+例如 `HC-18` 的 0.074 来自 `results/newsgroups_20260626_232910.json` 的
+`aggregated["RF-Tabular"]["ece_mean"]`（0.07409557…）四舍五入到 3 位；
+`HC-17` 的 5 是 `results/*.json` 的现数文件数。`--save` 重跑一次即可重建整份报告，
+不需要手工抄数。
+
+**失败归因**：`run_cases.py` 不只报通过率，失败时按 `axis` 汇总（例如
+`doc/readme: 1 条 —— HC-20`），直接指出是哪个模块的哪个口径坏了。
