@@ -13,7 +13,6 @@ All metrics work for both binary and multiclass settings.
 
 import numpy as np
 from typing import Dict, Tuple, Optional
-from sklearn.metrics import brier_score_loss
 
 
 # ============================================================

@@ -9,7 +9,6 @@ CPU-optimized: small batches, fp32, no gradient. Offline-first.
 
 import os
 import ssl
-import pickle
 import hashlib
 import numpy as np
 from typing import List, Optional
@@ -32,7 +31,6 @@ import torch
 
 from config import (
     EMBEDDING_MODEL_NAME,
-    EMBEDDING_DIM,
     MAX_SEQ_LENGTH,
     BATCH_SIZE_EMBED,
     DATA_DIR,

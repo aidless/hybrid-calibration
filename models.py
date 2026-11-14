@@ -8,12 +8,11 @@ All models expose a uniform interface:
 """
 
 import numpy as np
-from typing import Optional, Dict, Any
+from typing import Optional, Dict
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.isotonic import IsotonicRegression
-from sklearn.base import BaseEstimator, ClassifierMixin
 import xgboost as xgb
 import lightgbm as lgb
 

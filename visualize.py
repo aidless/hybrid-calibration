@@ -16,7 +16,6 @@ from typing import Dict, List, Optional
 import matplotlib
 matplotlib.use("Agg")  # Non-interactive backend
 import matplotlib.pyplot as plt
-import matplotlib.ticker as mticker
 import seaborn as sns
 
 from config import FIGURES_DIR

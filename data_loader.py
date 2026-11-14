@@ -14,7 +14,7 @@ import ssl
 import re
 import pickle
 import numpy as np
-from typing import Dict, Tuple, Optional
+from typing import Optional
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 

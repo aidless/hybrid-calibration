@@ -6,7 +6,7 @@ import json
 import os
 import time
 import numpy as np
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Optional
 from scipy import stats
 from config import RESULTS_DIR
 

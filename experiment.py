@@ -14,7 +14,6 @@ Pipeline:
 """
 
 import time
-import copy
 import numpy as np
 from typing import Dict, List, Optional
 
@@ -59,7 +58,7 @@ def run_experiment(
 
     if verbose:
         print("=" * 70)
-        print(f"EXPERIMENT: Hybrid Calibration Study")
+        print("EXPERIMENT: Hybrid Calibration Study")
         print(f"  Dataset: {dataset_name} ({cfg['task']}, {cfg['num_classes']} classes)")
         print(f"  Seeds: {len(RANDOM_SEEDS)}")
         print(f"  Timestamp: {timestamp}")
@@ -84,7 +83,7 @@ def run_experiment(
         print(f"  Tabular features: {data['X_train_tab'].shape[1]} dims")
         print(f"  Data source: {data.get('data_source', 'unknown')}")
         if data.get('data_source') == 'synthetic':
-            print(f"  ⚠ WARNING: Using synthetic data! Results may not reflect real-world performance.")
+            print("  ⚠ WARNING: Using synthetic data! Results may not reflect real-world performance.")
         print(f"  Time: {time.time() - t0:.1f}s")
 
     # ============================================================
@@ -566,7 +565,7 @@ def run_full_study(
 
     Each factor isolated, measured, and statistically compared.
     """
-    from config import EMBEDDING_MODELS, SAMPLE_SIZE_SWEEP
+    from config import EMBEDDING_MODELS
 
     if dataset_names is None:
         dataset_names = ["newsgroups"]
