@@ -1,111 +1,124 @@
-# 🔬 Hybrid Calibration — Deep Dive Analysis
+# Hybrid calibration — what was actually measured
 
-**Project**: `hybrid_calibration/`
-**Question**: How does combining LLM embeddings with tree ensembles affect probability calibration?
-**Status**: Quick-test only (2 seeds, 1 dataset, 4/14 models)
+**STATUS: WORK-IN-PROGRESS — not A yet**
 
----
+The question and the gap list live in [README.md](README.md). This file is the long table. Do not cite a number from memory; the block between the markers is regenerated from the raw artifacts.
 
-## 1. Architecture Summary
+<!-- DEEP-OBSERVED:START -->
+The block below is generated from the raw JSON and `.npy` files by `checks/render_observed.py`. `make check` fails if this block is edited by hand.
 
-```
-Data Pipeline:
-  Text → [Tabular Features (14 dims)] + [GPT-2 Embeddings (768 dims)]
-         → 3 Feature Sets: tabular | embeddings | hybrid (tabular+embeddings)
-              → Model: RF / XGB / LGB / MLP / Calibrated(Platt/Isotonic)
-                   → Metrics: ECE, MCE, Brier, Accuracy, Reliability
+### Historical JSON files (stored metrics, not recomputed from probabilities)
 
-Experiment Design:
-  14 model variants × 10 seeds × 4 datasets = up to 560 training runs
-  Statistical: Wilcoxon paired test + Bonferroni correction
-```
+These five files have no `y_true` or `y_prob`. `make check` averages the stored per-seed ECE, MCE, Brier, and accuracy and requires that average to match `aggregated`. It cannot rebuild ECE from predictions that were never saved.
 
-## 2. Current Results (Quick Test)
+| File | n | seeds recorded | independent seeds | variants | proba width | config classes | RF-Tabular acc | RF-Embed acc | RF-Embed ECE | RF-Embed Brier |
+|---|---:|---:|---:|---:|---:|---:|---|---|---|---|
+| `newsgroups_20260626_232811.json` | 400 | 2 | 1 | 4 | 4 | 8 | 0.765±0.000 | 0.247±0.000 | 0.007±0.000 | 0.750±0.000 |
+| `newsgroups_20260626_232910.json` | 400 | 2 | 2 | 4 | 4 | 8 | 0.796±0.044 | 0.247±0.000 | 0.007±0.001 | 0.750±0.000 |
+| `newsgroups_20260627_174217.json` | 800 | 3 | 3 | 7 | 4 | 8 | 0.588±0.026 | 0.996±0.007 | 0.094±0.005 | 0.073±0.010 |
+| `newsgroups_20260627_175253.json` | 500 | 2 | 2 | 4 | 4 | 8 | 0.525±0.014 | 0.970±0.000 | 0.184±0.009 | 0.265±0.017 |
+| `newsgroups_20260627_181524.json` | 400 | 2 | 2 | 6 | 4 | 8 | 0.457±0.070 | 0.963±0.035 | 0.178±0.006 | 0.255±0.016 |
 
-| Model | ECE ↓ | MCE ↓ | Brier ↓ | Acc ↑ |
-|-------|:-----:|:-----:|:-----:|:-----:|
-| RF-Tabular (纯表格) | 0.074 | 0.351 | 0.273 | **0.796** |
-| RF-Hybrid (表格+LLM) | 0.087 | 0.334 | 0.280 | 0.790 |
-| RF-Embed (纯LLM) | **0.007** | **0.008** | 0.750 | 0.247 |
-| MLP-Embed (纯LLM) | 0.006 | 0.006 | 0.750 | 0.247 |
+Per-seed accuracy, RF-Tabular then RF-Embed:
 
-**关键模式**：
-- 纯表格 → 高准确率、中等校准
-- 纯 LLM → 极好校准、极差准确率（模型几乎在猜）
-- **Hybrid → 准确率≈表格，校准比表格差** ← 这就是"隐形代价"
+| File | RF-Tabular seeds | RF-Embed seeds |
+|---|---|---|
+| `newsgroups_20260626_232811.json` | 0.765, 0.765 | 0.247, 0.247 |
+| `newsgroups_20260626_232910.json` | 0.827, 0.765 | 0.247, 0.247 |
+| `newsgroups_20260627_174217.json` | 0.596, 0.559, 0.609 | 1.000, 1.000, 0.988 |
+| `newsgroups_20260627_175253.json` | 0.515, 0.535 | 0.970, 0.970 |
+| `newsgroups_20260627_181524.json` | 0.407, 0.506 | 0.938, 0.988 |
 
-## 3. Current Limitations (Blocking Publication)
+Every stored probability vector has width 4. `config.num_classes` is 8 in every file. Those two facts disagree. Pairwise tests stored in the files: 0 of 54 have `significant_corrected` true. That count is not a significance result; recorded seed counts are 2 or 3. Files whose seed blocks match to 1e-9 on ECE, accuracy, and Brier, so the independent-seed count is 1: `newsgroups_20260626_232811.json`.
 
-| 问题 | 严重度 | 修复 |
-|------|:------:|------|
-| 仅 2 seeds | 🔴 Critical | 需 ≥10 seeds（配置已支持） |
-| 仅 1 数据集 | 🔴 Critical | 需 ≥3 datasets（IMDB + AG News + Newsgroups） |
-| 仅 4/14 模型 | 🟡 Major | 至少跑 Tabular/Hybrid/Embed 三组 × RF/XGB/LGB + MLP |
-| 合成 embedding | 🟡 Major | 需真实 GPT-2 embeddings（`--skip-embeddings` 当前为 True） |
-| 无显著性检验 | 🔴 Critical | 2 seeds 无法做 Wilcoxon，需 ≥5 seeds |
-| 用 GPT-2 而非 GPT-4o | 🟡 Minor | GPT-2 是合理的，但需在 limitation 中说明代际差异 |
+Single-bin reliability with Brier above 0.5 occurs for 8 embedding model-rows, in `newsgroups_20260626_232811.json`, `newsgroups_20260626_232910.json`. A forest on constant features produces Brier 1-1/K. The diagnostic `zero_embed` arm lands on that identity for K=8 and K=6 (table below). Those historical rows sit near Brier 0.750, which is 1-1/4, matching the stored probability width. The files do not say whether those features were zeros. Single-bin reliability with Brier at or below 0.5 is a different pattern (a peaked, mostly correct predictor), and it occurs in: `newsgroups_20260627_174217.json seed 123 MLP-Embed`.
 
-## 4. Strengthening Plan
+Stored MCE equals the largest |bin accuracy − bin confidence| gap on the saved reliability curve for every seed-model row (mismatches: 0). The bin that realizes MCE has minimum count 1 and median count 3. At test n of 81–161 and 10 bins, MCE is a small-bin statistic.
 
-### Phase H1: Full Run (最低可发表标准)
-```bash
-python experiment.py --dataset imdb --models RF-Tabular RF-Embed RF-Hybrid MLP-Embed
-python experiment.py --dataset ag_news --models RF-Tabular RF-Embed RF-Hybrid MLP-Embed
-python experiment.py --dataset newsgroups --models RF-Tabular RF-Embed RF-Hybrid MLP-Embed
-```
-- 3 datasets × 4 models × 10 seeds = 120 training runs
-- 需真实 GPT-2 embeddings（去掉 `--skip-embeddings`）
-- 时间：~2-4 小时（取决于 CPU）
-- 成本：$0（全部本地计算）
+### Committed embedding matrices (exact float32 row match)
 
-### Phase H2: Full Matrix (最强版本)
-加上全部 14 个模型变体：
-- + XGB-Tabular, LGB-Tabular（更多树模型）
-- + XGB-Embed, LGB-Embed（更多 embedding 模型）
-- + XGB-Hybrid, LGB-Hybrid（更多 hybrid 模型）
-- + RF-Hybrid-Platt, RF-Hybrid-Isotonic（事后校准）
-- + MLP-Embed-Platt, MLP-Embed-Isotonic（事后校准）
+Groups are inferred: one model family whose train+val+test row counts sum to the stated n. Result JSON does not store the cache filename.
 
-## 5. Connection to BOUNDARY_SYNC
+| Group | dim | test n | test rows also in train | test rows also in val |
+|---|---:|---:|---:|---:|
+| `bge_n400` | 512 | 81 | 7 | 2 |
+| `bge_n500` | 512 | 101 | 11 | 2 |
+| `bge_n996` | 512 | 200 | 8 | 1 |
+| `minilm_n800` | 384 | 161 | 27 | 7 |
 
-### Narrative Arc (跨论文)
-```
-BOUNDARY_SYNC:   LLM 通信 → 输出同质化 (隐形代价 #1)
-Hybrid Cal:      LLM 特征 → 校准退化   (隐形代价 #2)
+`minilm_n800` test n=161 is the only historical file with that test size: `newsgroups_20260627_174217.json`, RF-Embed accuracy mean 0.996. If the 27 overlapping test rows were perfect and the other rows were at 4-class chance 0.25, accuracy would be 0.376. 0.996 is above that ceiling. Exact duplicate vectors in that cache are a real split overlap and are not sufficient to produce the stored accuracy. The link from this cache to that JSON is the shared test size, not an id stored in the JSON.
 
-共同主题: LM 集成方式引入标准指标(Accuracy/F1)捕捉不到的副作用
-共同方法: Bootstrap CI + 配对检验 + 效应量
-```
+Test n=81 appears in more than one JSON (newsgroups_20260626_232811.json, newsgroups_20260626_232910.json, newsgroups_20260627_181524.json), so the BGE n=400 cache is not assigned to a single file. Across sample sizes, `newsgroups_test_BAAI_bge_small_zh_v1.5_39bec81c_81.npy` has 43/81 rows exactly equal to a row in `newsgroups_train_BAAI_bge_small_zh_v1.5_8324f553_349.npy`. That pair is not one split.
 
-### 论文中可引用的具体位置
+### Diagnostic `leakdiag-2026-11-16` (ECE and Brier recomputed from stored probabilities)
 
-**BOUNDARY_SYNC Related Work (§2.3/§2.4)**：
-> "Recent work has identified a parallel hidden cost in a different LLM integration paradigm: concatenating frozen LLM embeddings with tabular features for tree-ensemble classification degrades probability calibration without improving accuracy — an effect invisible to standard metrics [cite hybrid_calibration]. This pattern of LLM integration producing 'silent side effects' motivates our systematic measurement of communication-induced coupling."
+Random forest, 100 trees, depth 10, `random_state=42`, `n_jobs=1`. Seeds 0–4 are split seeds only. No Wilcoxon test is computed. Not GPT-2, not the committed BGE/MiniLM matrices, not a rerun of the five JSON files.
 
-**BOUNDARY_SYNC Discussion (§5.2)**：
-> "Our finding that communication homogenizes LM outputs joins a growing body of evidence that LLM integration can produce metric-invisible side effects. For instance, [cite hybrid_calibration] showed that LLM features degrade calibration in downstream classifiers without changing accuracy. Both cases underscore the need for measurement protocols that go beyond task performance."
+Real 20 Newsgroups, the loader's 8 categories, headers/footers/quotes removed, stratified subset n=800. TF-IDF (`max_features=2000`, word n-grams 1–2, `min_df=2`) is fit on the training split only.
 
-### Integration Priority
-| 行动 | 优先级 | 成本 | BOUNDARY_SYNC 收益 |
-|------|:------:|:----:|:-------------------|
-| H1: 跑 3 datasets × 4 models | ❶ | ~3h CPU | 可正式引用 |
-| H2: 跑全部 14 models + calibration | ❷ | ~6h CPU | 可做主要引用 + 校准修复方案 |
-| 写入 BOUNDARY_SYNC Related Work | ❸ | 10min | 1 段即可 |
-| 写入 BOUNDARY_SYNC Discussion | ❹ | 5min | 1 句即可 |
+| Arm | ECE | Brier | Accuracy |
+|---|---|---|---|
+| `tabular` | 0.040±0.005 | 0.852±0.011 | 0.217±0.028 |
+| `tfidf` | 0.070±0.008 | 0.720±0.019 | 0.606±0.054 |
+| `tfidf_cue_ablated` | 0.055±0.005 | 0.769±0.010 | 0.511±0.064 |
+| `shuffled_tfidf` | 0.010±0.003 | 0.879±0.004 | 0.102±0.023 |
+| `zero_embed` | 0.002±0.000 | 0.875±0.000 | 0.124±0.000 |
+| `dup_inject_tfidf` | 0.084±0.006 | 0.687±0.013 | 0.681±0.032 |
 
-## 6. Quick Start
+Chance accuracy at 8 classes is 0.125. `shuffled_tfidf` is 0.102±0.023. `zero_embed` Brier is 0.875±0.000 (1-1/8 = 0.875) and accuracy is 0.124±0.000. TF-IDF accuracy on rows whose exact text is absent from train is 0.622±0.055. Exact train/test text overlap by seed: 4, 4, 5, 6, 3. `dup_inject_tfidf` replaces 40 test rows with copies of training rows (fraction 0.25) and accuracy moves from 0.606±0.054 to 0.681±0.032.
 
-```powershell
-cd hybrid-calibration   # repository root (clone location is arbitrary)
+Cue-word ablation (`tfidf_cue_ablated`) uses a label-independent word-boundary deletion of 19 tokens, including ordinary words (`car`, `gun`, `windows`). Recorded on the subset at generation time, and not recomputed by `make check` because the raw text is not committed: own-class cue rate 0.340, any-cue rate 0.362, full corpus n=7769 unique=7530 empty=236, subset n=800 unique=781 empty=23.
 
-# Install deps if needed
-pip install torch transformers xgboost lightgbm scikit-learn scipy matplotlib seaborn datasets
+TF-IDF ECE at bin counts 5:0.066±0.007, 10:0.070±0.008, 15:0.095±0.010, 20:0.095±0.015. The same probabilities, three different bin widths, three different ECE means.
 
-# Run full experiment (real GPT-2 embeddings + 10 seeds)
-python experiment.py --dataset newsgroups
-python experiment.py --dataset imdb
-python experiment.py --dataset ag_news
+Isotonic probe, seed 0 only, same TF-IDF forest. Uncalibrated on that seed: ECE 0.071, Brier 0.721, accuracy 0.602. Isotonic fit on validation, scored on test: ECE 0.049, Brier 0.551, accuracy 0.584. Isotonic fit on the test labels, scored on those same labels: ECE 0.037, Brier 0.445, accuracy 0.677. The last row is contamination, not a result.
 
-# Generate figures
-python visualize.py results/newsgroups_*.json
-```
+Synthetic style corpus from the current `_load_synthetic(600)` (6 classes). The class is the template family that wrote the text. This generator's class count is 6, so it is not what the 4-column historical files scored.
+
+| Arm | ECE | Brier | Accuracy |
+|---|---|---|---|
+| `tabular` | 0.037±0.006 | 0.089±0.028 | 0.947±0.031 |
+| `hash` | 0.034±0.004 | 0.023±0.005 | 1.000±0.000 |
+| `hash_label_in_text` | 0.029±0.004 | 0.018±0.004 | 1.000±0.000 |
+| `shuffled_hash` | 0.067±0.015 | 0.879±0.029 | 0.182±0.033 |
+| `zero_embed` | 0.003±0.001 | 0.833±0.000 | 0.167±0.004 |
+
+What this supports: the five JSON files disagree with each other and with `config.num_classes`; their stored pairwise flags are all false; committed embedding splits contain exact duplicate vectors; a shuffled-label control on the new 8-class TF-IDF run collapses; constant features reproduce the uniform Brier identity; injecting train rows into the test set raises accuracy; fitting isotonic on the test labels lowers that seed's ECE.
+
+What this does not support: a stable calibration effect of embeddings; GPT-2 at 768 dimensions; that the historical near-perfect embedding accuracies are accounted for by the duplicate-vector counts above; any Wilcoxon or Bonferroni claim; the planned 14 variants × 10 seeds × 4 datasets, which is NOT YET MEASURED.
+
+GitHub About replacement (the live About field is not changed by a pull request):
+
+> WIP pilot, not a finding. Five committed runs are 4-class files labeled as 8-class newsgroups; on-disk embeddings are BGE-512 and MiniLM-384, not GPT-2-768. Scores flip from chance to near-perfect; train/test duplicate vectors are observed; 14x10x4 is not measured.
+
+### Per-group duplicate counts inside each matrix
+
+| Group | split | rows | unique | extra copies | max multiplicity |
+|---|---|---:|---:|---:|---:|
+| `bge_n400` | train | 279 | 257 | 22 | 4 |
+| `bge_n400` | val | 40 | 39 | 1 | 2 |
+| `bge_n400` | test | 81 | 78 | 3 | 2 |
+| `bge_n500` | train | 349 | 315 | 34 | 4 |
+| `bge_n500` | val | 50 | 49 | 1 | 2 |
+| `bge_n500` | test | 101 | 101 | 0 | 1 |
+| `bge_n996` | train | 697 | 688 | 9 | 3 |
+| `bge_n996` | val | 99 | 99 | 0 | 1 |
+| `bge_n996` | test | 200 | 200 | 0 | 1 |
+| `minilm_n800` | train | 559 | 508 | 51 | 4 |
+| `minilm_n800` | val | 80 | 78 | 2 | 2 |
+| `minilm_n800` | test | 161 | 154 | 7 | 3 |
+
+Diagnostic environment recorded in the JSON: sklearn 1.9.1, numpy 2.5.5. `make check` does not retrain the forests and does not download 20 Newsgroups; it recomputes ECE, Brier, and accuracy from the stored probability matrices.
+<!-- DEEP-OBSERVED:END -->
+
+## Code paths that matter for leakage
+
+- `experiment.py` pools the seed-42 split and splits again per seed. As of this commit, tabular features are re-extracted after that split and `StandardScaler` is fit on that seed's training rows only. Historical JSON files were written before that change. They are not recomputed here.
+- Tree `random_state` stays 42. The seed axis is the split, not the forest RNG. That was true of the historical runs' code path and is still true.
+- `embedding_extractor.py` runs a frozen encoder under `torch.no_grad`. It does not fit the encoder on labels. The cache key now hashes every text. The committed `.npy` files were written with the previous prefix/suffix hash; a collision is not demonstrated, and it is not ruled out.
+- `--skip-embeddings` fills the embedding block with zeros. The diagnostic's `zero_embed` arm is the controlled version of that path.
+- `CalibratedModel` in `models.py` refuses to fit without a validation split. The diagnostic's `fit_on_test` isotonic row is a separate probe that deliberately breaks that rule, and it is labeled as contamination.
+
+## What is not in this file
+
+Publication prose, cross-paper citation drafts, and a claim that hybrid features have a stable calibration cost. Those were removed because the five JSON files do not support them jointly. The planned design remains **NOT YET MEASURED**.

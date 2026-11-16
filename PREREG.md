@@ -1,69 +1,36 @@
-# PREREG — hybrid-calibration (pilot 阶段)
+# PREREG — hybrid-calibration
 
-> 预注册规格：本文件声明**本仓库在 pilot 阶段可检验的研究假设、评测方案、
-> 成功标准与明确边界**。内容全部对应仓库真实实现与真实结果
-> （`calibration.py`/`models.py`/`experiment.py`/`data_loader.py`、
-> `config.py` 的 `RANDOM_SEEDS`、`results/newsgroups_*.json` 的真实
-> ECE/MCE/Brier/accuracy、`tests/test_committed_results.py` 的 3 项离线测试），
-> 不含虚构数字或未实现能力。
->
-> 状态：**quick test only**（2 seeds、1 dataset、4/14 models）。这是 pilot，
-> 不是结论；禁止引用为已发表结果（见 DEEP_DIVE.md 的 blocking issues）。
+This file is the original plan. It is not a report of what the committed files show.
 
-## 1. 研究问题
+**STATUS: WORK-IN-PROGRESS — not A yet.** The plan below was 14 variants × 10 seeds × 4 datasets, with paired Wilcoxon tests and a Bonferroni correction. That design is **NOT YET MEASURED**. The committed historical files are pilots (one dataset name, 2–3 recorded seeds, 4–7 variants) whose probability vectors have width 4 while `config.num_classes` says 8. They do not jointly support the hypotheses below. See [README.md](README.md).
 
-把 LLM embedding（768 维 GPT-2）加入树集成（14 维表格特征）会不会**买来校准、
-却损失准确率**？混合视图会以纯准确率指标掩盖的方式改变模型的校准轮廓
-（ECE / MCE / Brier / reliability）。本仓库直接测量它。
+## Planned question
 
-## 2. 假设（H1–H3，全部可证伪）
+Does adding a frozen text embedding to 14 surface features change ECE and Brier, or only accuracy?
 
-- **H1（纯表格高准确、中校准）**：14 维表格特征给出高准确率（~0.80）与中等
-  校准（ECE ~0.07）；RF-Tabular 是准确率最高的一档。
-- **H2（纯 embedding 校准极好但接近无用）**：纯 768 维 embedding 模型校准极好
-  （ECE ~0.007）但准确率接近猜（~0.247），不能作为预测器。
-- **H3（hybrid 校准退化）**：hybrid 保留表格准确率（~0.79）但校准**比纯表格差**
-  （ECE 0.087 vs 0.074）——这是纯准确率指标隐藏的「隐形代价」。
+## Planned hypotheses (not established)
 
-## 3. 评测方案
+- H1. Tabular features: higher accuracy, middling ECE.
+- H2. Embedding-only models: very small ECE and near-chance accuracy.
+- H3. Hybrid models: tabular accuracy, worse ECE than tabular alone.
 
-- **特征集**：tabular（14 维）| embeddings（768 维 GPT-2）| hybrid（并置）。
-- **模型**：RF / XGB / LGB / MLP，加 Platt 与 isotonic 事后校准。
-- **设计**：14 模型变体 × 10 seeds × 4 datasets = 至多 560 次训练；
-  统计分析用**配对 Wilcoxon + Bonferroni 校正**。
-- **pilot 已跑**：2 seeds、1 dataset（newsgroups）、4/14 模型（RF-Tabular /
-  RF-Hybrid / RF-Embed / MLP-Embed），结果落 `results/newsgroups_*.json`。
+H2 describes the June 26 embedding rows (single confidence bin, Brier near `1 - 1/4`). It does not describe the later files, where embedding accuracy is near 1. H1 and H3 are not stable across the five files. None of the three is a finding.
 
-## 4. 成功标准
+## What the plan said the features were
 
-1. `tests/test_committed_results.py` 3 项离线测试全过：每个 committed 结果带
-   可复现元数据（dataset / n_seeds / model_variants）；ECE/MCE/Brier/accuracy
-   均值与标准差在合法范围；README pilot 表与具名 JSON 源**字节级一致**。
-2. pilot 表四组数字（RF-Tabular 0.074/0.351/0.273/0.796 等）可从
-   `newsgroups_20260626_232910.json` 的 `aggregated` 逐字段重算（round 3）。
-3. 统计检验：n=2 seeds 时配对 Wilcoxon **不可行**——如实披露，不假装有显著性。
+The plan text used to say "768-d GPT-2". The code and the committed matrices do not. The default encoder name in `config.py` is `BAAI/bge-small-zh-v1.5` (512-d). The other committed matrices are MiniLM (384-d). There is no GPT-2 weight and no 768-d matrix in the tree.
 
-## 5. 明确边界（不证明什么）
+The plan text used to say `--skip-embeddings` was on and the embeddings were synthetic. That is not recorded in the JSON. Zeros are what `--skip-embeddings` does. Some historical embedding rows look like a constant predictor. Others do not. The flag was not saved.
 
-- **不证明混合 LLM embedding 造成校准退化**：2 seeds 无法从噪声中分离真实
-  效应；n=2 的配对检验接近无信息。**禁止引用 pilot 数字**。
-- **不证明跨数据集泛化**：仅 1 个数据集（newsgroups），需 ≥3（IMDB + AG News +
-  Newsgroups）。
-- **不证明完整模型矩阵**：仅 4/14 模型变体；需至少 Tabular/Hybrid/Embed ×
-  RF/XGB/LGB + MLP。
-- **不证明使用真实 embedding**：当前 `--skip-embeddings` 为 True，embedding 是
-  合成的；需真实 GPT-2 embedding 才可发表。
-- **不证明 GPT-4o 代际**：用的是 GPT-2（合理但需在 limitation 中说明代际差异）。
+## What a confirmatory run would have to record
 
-## 6. 数据与复现
+`data_source`, empirical class count, encoder name, cache filename, the split seed, and `y_true` / `y_prob` on the test split. Pairwise tests are not interpretable below 10 seeds. A shuffled-label control has to be reported next to any near-perfect embedding accuracy, on the same rows.
 
-- 复现（无需重跑训练）：
-  ```bash
-  python3 -m pytest tests/ -q      # 3 passed（纯离线，不重跑模型训练）
-  ```
-- 全量跑（需本地算力，~2-4 小时 CPU）：
-  ```bash
-  python3 experiment.py --dataset imdb --models RF-Tabular RF-Embed RF-Hybrid MLP-Embed
-  python3 experiment.py --dataset ag_news --models RF-Tabular RF-Embed RF-Hybrid MLP-Embed
-  python3 experiment.py --dataset newsgroups --models RF-Tabular RF-Embed RF-Hybrid MLP-Embed
-  ```
+## Reproduction of the numbers that do exist
+
+```bash
+python3 -m pip install -r requirements-check.txt
+make check
+```
+
+That does not rerun the planned design.

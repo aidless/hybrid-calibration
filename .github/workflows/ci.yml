@@ -34,10 +34,10 @@ jobs:
           else
             echo "no Python sources tracked"
           fi
-      - name: Verify committed result contracts
+      - name: Offline check (no model download)
         run: |
-          python -m pip install pytest
-          pytest -q
+          python -m pip install -r requirements-check.txt
+          make check
       - name: Check that every relative Markdown link resolves
         run: |
           python - <<'PY'

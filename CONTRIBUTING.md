@@ -29,10 +29,11 @@ pip install -r requirements.txt
 ## Verifying your change
 
 ```bash
-python3 -m compileall .
+python3 -m pip install -r requirements-check.txt
+make check
 ```
 
-A pull request that does not state how it was verified will not be reviewed.
+`make check` is the offline contract (no model download). A pull request that does not state how it was verified will not be reviewed.
 
 ## Claim-changing changes
 

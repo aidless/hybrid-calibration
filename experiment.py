@@ -3,7 +3,7 @@ Main Experiment Runner: Hybrid Tree-Ensemble + LLM Calibration Study.
 
 Pipeline:
   1. Load dataset & extract tabular features
-  2. Extract GPT-2 embeddings (cached to disk)
+  2. Extract frozen encoder embeddings (cached to disk; default is BGE, not GPT-2)
   3. For each random seed:
      a. Split data
      b. Train all model variants
@@ -166,8 +166,13 @@ def run_experiment(
         print("\n" + build_summary_table(all_seed_results))
 
     # Pairwise statistical tests for ECE
+    n_seed_runs = len(all_seed_results)
+    tests_interpretable = n_seed_runs >= 10
     if verbose:
         print("\n[Statistical Tests] ECE pairwise (Wilcoxon, Bonferroni corrected)")
+        if not tests_interpretable:
+            print(f"  NOT INTERPRETABLE: n_seeds={n_seed_runs} < 10. "
+                  "Flags below are not a significance result.")
     ece_scores = {}
     for v in variants:
         name = v.name
@@ -182,7 +187,7 @@ def run_experiment(
 
     if verbose:
         sig_count = sum(1 for pt in pairwise_tests if pt["significant_corrected"])
-        print(f"  Significant pairs (corrected): {sig_count}/{len(pairwise_tests)}")
+        print(f"  Pairs with significant_corrected=true: {sig_count}/{len(pairwise_tests)}")
         for pt in pairwise_tests:
             if pt["significant_corrected"]:
                 direction = "↓" if pt["mean_diff"] < 0 else "↑"
@@ -202,10 +207,31 @@ def run_experiment(
             "n_bins": N_BINS,
             "model_variants": [v.name for v in variants],
             "num_classes": cfg["num_classes"],
+            "num_classes_empirical": int(len(np.unique(np.concatenate([
+                data["y_train"], data["y_val"], data["y_test"],
+            ])))),
         },
+        "data_source": data.get("data_source"),
+        "embedding": {
+            "model_name": None if skip_embeddings else EMBEDDING_MODEL_NAME,
+            "skipped": bool(skip_embeddings),
+            "fit_on_labels": False,
+            "note": (
+                "Zero vectors were substituted. A constant embedding cannot "
+                "support an accuracy claim."
+                if skip_embeddings
+                else "Frozen pretrained encoder applied to text. Not fit on labels."
+            ),
+        },
+        "split_protocol": (
+            "Pooled texts are re-split per seed. Tabular StandardScaler is fit "
+            "on that seed's training rows only. Tree random_state stays 42, so "
+            "the seed axis is the split, not the model RNG."
+        ),
         "seed_results": all_seed_results,
         "aggregated": aggregated,
         "pairwise_tests_ece": pairwise_tests,
+        "pairwise_tests_interpretable": tests_interpretable,
     }
 
     # Inject embedding model version metadata (ACL 2027 Gene 3)
@@ -247,21 +273,35 @@ def _run_single_seed(
     all_texts = data["texts_train"] + data["texts_val"] + data["texts_test"]
     all_labels = np.concatenate([data["y_train"], data["y_val"], data["y_test"]])
     all_emb = np.concatenate([emb_train, emb_val, emb_test], axis=0)
-    all_tab = np.concatenate([data["X_train_tab"], data["X_val_tab"], data["X_test_tab"]], axis=0)
 
-    # Split: train / val / test
+    # Split texts, labels, and frozen embeddings together. Tabular features are
+    # rebuilt after the split so the scaler sees only this seed's training rows.
+    # The matrices on `data` were scaled on the seed-42 split; reusing them
+    # after this resplit leaks that split's means and variances into later seeds.
     from config import TEST_SIZE, VAL_SIZE
-    texts_tr, texts_temp, y_tr, y_temp, emb_tr, emb_temp, tab_tr, tab_temp = train_test_split(
-        all_texts, all_labels, all_emb, all_tab,
+    from sklearn.preprocessing import StandardScaler
+    from data_loader import extract_tabular_features
+
+    texts_tr, texts_temp, y_tr, y_temp, emb_tr, emb_temp = train_test_split(
+        all_texts, all_labels, all_emb,
         test_size=TEST_SIZE + VAL_SIZE,
         random_state=seed, stratify=all_labels,
     )
     val_ratio = VAL_SIZE / (TEST_SIZE + VAL_SIZE)
-    texts_va, texts_te, y_va, y_te, emb_va, emb_te, tab_va, tab_te = train_test_split(
-        texts_temp, y_temp, emb_temp, tab_temp,
+    texts_va, texts_te, y_va, y_te, emb_va, emb_te = train_test_split(
+        texts_temp, y_temp, emb_temp,
         test_size=1 - val_ratio,
         random_state=seed, stratify=y_temp,
     )
+    tab_tr_raw, _ = extract_tabular_features(texts_tr)
+    tab_va_raw, _ = extract_tabular_features(texts_va)
+    tab_te_raw, _ = extract_tabular_features(texts_te)
+    scaler = StandardScaler()
+    tab_tr = np.nan_to_num(scaler.fit_transform(tab_tr_raw), nan=0.0)
+    tab_va = np.nan_to_num(scaler.transform(tab_va_raw), nan=0.0)
+    tab_te = np.nan_to_num(scaler.transform(tab_te_raw), nan=0.0)
+    train_text_set = set(texts_tr)
+    n_test_in_train = sum(1 for t in texts_te if t in train_text_set)
 
     # Build feature matrices for each feature_set
     feature_matrices = {
@@ -340,6 +380,10 @@ def _run_single_seed(
     return {
         "seed": seed,
         "metrics": metrics_list,
+        "text_overlap": {
+            "n_test": int(len(texts_te)),
+            "n_test_exact_text_in_train": int(n_test_in_train),
+        },
     }
 
 
