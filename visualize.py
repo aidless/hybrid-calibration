@@ -332,11 +332,15 @@ def plot_significance_heatmap(
         cmap="RdBu_r", center=0,
         xticklabels=all_models, yticklabels=all_models,
         linewidths=0.5, linecolor="white",
-        cbar_kws={"label": "Signed -log10(p) (blue = row better)"},
+        cbar_kws={"label": "Signed -log10(corrected p); not for citation at n<10"},
         ax=ax,
     )
-    ax.set_title(f"Pairwise ECE Significance — {dataset_name.upper()}\n"
-                 f"(* = significant after Bonferroni)")
+    n_seeds = results.get("config", {}).get("n_seeds")
+    ax.set_title(
+        f"Pairwise ECE differences — {dataset_name}\n"
+        f"n_seeds={n_seeds}. A star would mean significant_corrected. "
+        f"Not a significance result when n_seeds < 10."
+    )
     plt.xticks(rotation=45, ha="right")
     plt.yticks(rotation=0)
 

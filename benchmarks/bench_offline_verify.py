@@ -1,15 +1,12 @@
 #!/usr/bin/env python3
-"""Offline verification benchmark for hybrid-calibration.
+"""Narrow check of the five historical JSON files.
 
-Does NOT rerun model training. Verifies that every committed result file carries
-reproducibility metadata, that calibration aggregates are finite probabilities in
-valid ranges, and that the README pilot table matches its named JSON source.
+Does not parse README. Does not recompute ECE from predictions (those files
+do not store y_prob). The offline contract is `make check`.
 
-This is the honest claim the pilot makes: the numbers are recomputable from the
-committed JSON with no model call.
-
-Usage: python benchmarks/bench_offline_verify.py
-Exit: 0 if all checks pass, 1 otherwise (fail-closed).
+This script checks metadata, finite aggregate ranges, and that one hardcoded
+round-3 tuple still matches results/newsgroups_20260626_232910.json. The
+tuple is the historical pilot table, not a claim that the README was read.
 """
 import json
 import sys
@@ -75,7 +72,7 @@ def main():
         if actual != exp:
             pilot_ok = False
             print(f"  [FAIL] pilot {label}: expected {exp}, got {actual}")
-    all_ok &= check("README pilot table matches named JSON (byte-level, round 3)", pilot_ok)
+    all_ok &= check("hardcoded round-3 tuple matches 232910 aggregated means", pilot_ok)
 
     print("---")
     print(f"RESULT: {'PASS' if all_ok else 'FAIL'}")

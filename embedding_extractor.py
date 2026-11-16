@@ -40,11 +40,12 @@ from config import (
 class EmbeddingExtractor:
     """Extract frozen LLM embeddings for downstream tree ensembles."""
 
-    # Map model names to local cache paths (for offline loading)
+    # Author-machine cache locations. None of these paths are in the
+    # repository. `make check` does not load them and does not download weights.
     _MODEL_PATH_MAP = {
         "BAAI/bge-small-zh-v1.5": [
-            "models/bge",  # Project-local (portable)
-            "~/.cache/modelscope/BAAI/bge-small-zh-v1___5",  # ModelScope
+            "models/bge",  # author checkout, not committed
+            "~/.cache/modelscope/BAAI/bge-small-zh-v1___5",  # author ModelScope cache
             "~/.cache/huggingface/hub/models--BAAI--bge-small-zh-v1.5/snapshots/*",
         ],
         "sentence-transformers/all-MiniLM-L6-v2": [
@@ -158,8 +159,11 @@ class EmbeddingExtractor:
         cache_dir = os.path.join(DATA_DIR, "embeddings")
         os.makedirs(cache_dir, exist_ok=True)
 
+        # Hash every text. A prefix/suffix hash collides when only the middle
+        # of the split changes, and a collision would reuse another split's
+        # matrix under this split's name.
         text_hash = hashlib.md5(
-            "".join(texts[:100] + texts[-100:]).encode()
+            "\n".join(texts).encode("utf-8", errors="replace")
         ).hexdigest()[:8]
         model_short = self.model_name.replace("/", "_").replace("-", "_")
         cache_name = f"{dataset_name}_{split_name}_{model_short}_{text_hash}_{len(texts)}.npy"

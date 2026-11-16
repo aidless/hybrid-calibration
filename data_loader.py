@@ -34,8 +34,23 @@ except AttributeError:
 else:
     ssl._create_default_https_context = _create_unverified_https_context
 
-# Disable HuggingFace SSL warning
+# Author-environment workaround (Windows SSL failures on the machine that
+# drafted the loaders). Not part of the metric definition, and not used by
+# `make check`.
 os.environ["HF_HUB_DISABLE_SSL_VERIFY"] = "1"
+
+# The 8-way 20 Newsgroups slice the loader requests. Result files that report
+# a different probability width did not evaluate this slice as written.
+NEWSGROUP_CATEGORIES = [
+    "comp.graphics",
+    "comp.os.ms-windows.misc",
+    "rec.autos",
+    "rec.motorcycles",
+    "sci.crypt",
+    "sci.electronics",
+    "talk.politics.guns",
+    "talk.politics.mideast",
+]
 
 
 # ============================================================
@@ -138,13 +153,7 @@ def _load_yelp():
 def _load_newsgroups():
     """Load 20 Newsgroups dataset via sklearn (requires internet for first download)."""
     from sklearn.datasets import fetch_20newsgroups
-    # Use 4 main categories for simpler classification
-    categories = [
-        "comp.graphics", "comp.os.ms-windows.misc",
-        "rec.autos", "rec.motorcycles",
-        "sci.crypt", "sci.electronics",
-        "talk.politics.guns", "talk.politics.mideast",
-    ]
+    categories = list(NEWSGROUP_CATEGORIES)
     data = fetch_20newsgroups(
         subset="all", categories=categories,
         remove=("headers", "footers", "quotes"),
@@ -390,7 +399,8 @@ def prepare_data(
     X_val_tab, _ = extract_tabular_features(texts_val)
     X_test_tab, _ = extract_tabular_features(texts_test)
 
-    # Scale tabular features
+    # Scaler for this one split only. experiment._run_single_seed does not
+    # train on these matrices; it refits the scaler after each per-seed resplit.
     scaler = StandardScaler()
     X_train_tab = scaler.fit_transform(X_train_tab)
     X_val_tab = scaler.transform(X_val_tab)

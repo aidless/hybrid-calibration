@@ -1,7 +1,10 @@
-# --- acceptance_backfill (EVAL_ACCEPTANCE_STANDARD.md P4) ---
-# 证据来源: tests/
-# 命令逐字取自该来源，未增删任何参数。
-.PHONY: eval
+.PHONY: check eval
+
+# Offline contract. Recomputes ECE/Brier from committed diagnostic
+# probabilities and fails if README / DEEP_DIVE drift from the raw files.
+check:
+	python3 checks/check_offline.py
+	python3 -m pytest -q tests
 
 eval:
-	python3 -m pytest tests -q
+	python3 -m pytest -q tests
